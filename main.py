@@ -10,14 +10,31 @@ from google.oauth2.service_account import Credentials
 CLIENT_CONFIGS = [
     {
         "schema": "Junior",
-        "spreadsheet_id": "YOUR_GOOGLE_SHEET_ID_FOR_JUNIOR",  # 這裡放 Junior 的 Sheet ID
+        "spreadsheet_id": "JUNIOR_SHEET_ID_HERE",
         "views": [
             "Junior_campaign_view",
             "Junior_placement_view",
             "Junior_search_view"
         ]
+    }, 
+    {
+        "schema": "HowCool",
+        "spreadsheet_id": "HOWCOOL_SHEET_ID_HERE",
+        "views": [
+            "HowCool_campaign_view",
+            "HowCool_placement_view",
+            "HowCool_search_view"
+        ]
+    }, 
+    {
+        "schema": "Ksgreen",
+        "spreadsheet_id": "KSGREEN_SHEET_ID_HERE",
+        "views": [
+            "Ksgreen_campaign_view",
+            "Ksgreen_placement_view",
+            "Ksgreen_search_view"
+        ]
     }
-    # 你可以在這裡繼續新增其他客戶...
 ]
 
 def sync_data():
