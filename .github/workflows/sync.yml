@@ -1,0 +1,31 @@
+name: Weekly Supabase to Sheets Sync
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # 每週一凌晨 00:00 (UTC) 自動執行
+  workflow_dispatch:   # 允許手動點擊按鈕執行
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python_version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install psycopg2-binary gspread google-auth
+
+      - name: Run sync script
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          G_SERVICE_ACCOUNT_JSON: ${{ secrets.G_SERVICE_ACCOUNT_JSON }}
+        run: python main.py
