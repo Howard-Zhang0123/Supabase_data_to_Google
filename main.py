@@ -53,7 +53,7 @@ def sync_data():
 
     # 連接 Supabase (PostgreSQL)
     conn = psycopg2.connect(
-        host=db_host, database=db_name, user=db_user, password=db_pass, port=5432
+        host=db_host, database=db_name, user=db_user, password=db_pass, port=6543
     )
     cur = conn.cursor()
 
