@@ -10,7 +10,7 @@ from google.oauth2.service_account import Credentials
 CLIENT_CONFIGS = [
     {
         "schema": "Junior",
-        "spreadsheet_id": "JUNIOR_SHEET_ID_HERE",
+        "spreadsheet_id": "1RViVJm5cZ7BntUme9aLFRrsZv6mc9gJGrhymtTRKzXc",
         "views": [
             "Junior_campaign_view",
             "Junior_placement_view",
