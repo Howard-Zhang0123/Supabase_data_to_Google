@@ -42,7 +42,7 @@ def get_merge_keys(view_name):
 
 def sync_data():
     # --- 讀取機密資訊 ---
-    db_host = os.getenv("DB_HOST")
+    db_host = "ipv4.aws-1-ap-southeast-1.pooler.supabase.com"
     db_name = os.getenv("DB_NAME")
     db_user = os.getenv("DB_USER")
     db_pass = os.getenv("DB_PASS")
