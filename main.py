@@ -42,7 +42,7 @@ def get_merge_keys(view_name):
 
 def sync_data():
     # --- 讀取機密資訊 ---
-    db_host = "aws-1-ap-southeast-1.pooler.supabase.com"
+    db_host = "db.mxitbweoxdpghwzzotxc.supabase.co"
     db_name = os.getenv("DB_NAME")
     db_user = os.getenv("DB_USER")
     db_pass = os.getenv("DB_PASS")
@@ -56,7 +56,7 @@ def sync_data():
     # --- 連接 Supabase ---
     try:
         conn = psycopg2.connect(
-            host=db_host, database=db_name, user=db_user, password=db_pass, port=6543
+            host=db_host, database=db_name, user=db_user, password=db_pass, port=5432
         )
         print("✅ 資料庫連線成功")
     except Exception as e:
