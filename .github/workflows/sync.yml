@@ -10,17 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # 升級版本，消除警告
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5 # 升級版本，消除警告
         with:
-          python-version: '3.9' # 修正：原為 python_version，應為 python-version
+          python-version: '3.12' # 升級 Python 以符合 Google Auth 最新規範
 
       - name: Install dependencies
         run: |
           pip install psycopg2-binary gspread google-auth pandas
-          # 💡 這裡新增了 pandas，它是處理「重複資料覆蓋邏輯」的核心工具
+          # 💡 pandas 是處理歸因覆蓋邏輯的核心
 
       - name: Run sync script
         env:
