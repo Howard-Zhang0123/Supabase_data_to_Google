@@ -23,10 +23,11 @@ jobs:
 
       - name: Run sync script
         env:
-          # 確保這些名稱與 GitHub Secrets 裡的一模一樣
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
           G_SERVICE_ACCOUNT_JSON: ${{ secrets.G_SERVICE_ACCOUNT_JSON }}
-        run: python main.py
+        run: |
+          ls -la  # 💡 加這行，確認檔案列表與修改時間
+          python main.py
