@@ -12,15 +12,15 @@ import time
 # 請在下面填入各客戶對應的 Google Sheet ID
 CLIENT_CONFIGS = [
     {"schema": "Junior", "spreadsheet_id": "1RViVJm5cZ7BntUme9aLFRrsZv6mc9gJGrhymtTRKzXc"},
-    {"schema": "MorningBlues", "spreadsheet_id": "填入_ID"},
-    {"schema": "Milock(VC)", "spreadsheet_id": "填入_ID"},
-    {"schema": "Milock(SC)", "spreadsheet_id": "填入_ID"},
-    {"schema": "Ksgreen", "spreadsheet_id": "填入_ID"},
-    {"schema": "MOAPLAY", "spreadsheet_id": "填入_ID"},
+    {"schema": "MorningBlues", "spreadsheet_id": "1-gvuQGo88AI6-ma71wcR4OJTu7bc5IQ60GSq3kTBzpM"},
+    {"schema": "Milock(VC)", "spreadsheet_id": "1HY5UNSClrQSc_JbesGE8VUmExIqz8p8SNGMF5JplI90"},
+    {"schema": "Milock(SC)", "spreadsheet_id": "1NjiVDH3tLBYCfZvIHWt0_6W9eKNyBQpT-IyPh1BNOrg"},
+    {"schema": "Ksgreen", "spreadsheet_id": "1yg5GOudfOGDap9udQwBcRlGMV9KWlIjMcx3xD-b94S8"},
+    {"schema": "MOAPLAY", "spreadsheet_id": "1yUwDp0VNfokttPaZ_ZH0Xr7jR5YqGHJCamCaJbOobAc"},
     {"schema": "ShowLai", "spreadsheet_id": "填入_ID"},
-    {"schema": "ShanShui", "spreadsheet_id": "填入_ID"},
-    {"schema": "Ductech", "spreadsheet_id": "填入_ID"},
-    {"schema": "HowCool", "spreadsheet_id": "填入_ID"}
+    {"schema": "ShanShui", "spreadsheet_id": "1GIifS1zFcCwjsfhKXoqMVX3FVU3XNBn1WP2vavLrpow"},
+    {"schema": "Ductech", "spreadsheet_id": "1bn4dQVq1QtyvlV6l-Wy6KmfDQP87CNc5uxgI-mev90I"},
+    {"schema": "HowCool", "spreadsheet_id": "1FJLN3Ow_xblg9WFComyTSxrBMmyhPEyRSLjcKBMhtsc"}
 ]
 
 # 每位客戶預設要同步的 View 名稱
