@@ -7,29 +7,25 @@ from google.oauth2.service_account import Credentials
 import time
 
 # ==========================================
-# 1. 配置區：客戶名稱對照表與其 Google Sheet ID
+# 1. 配置區：單一整合表 ID 與客戶清單
 # ==========================================
-# 請在下面填入各客戶對應的 Google Sheet ID
-CLIENT_CONFIGS = [
-    {"schema": "Junior", "spreadsheet_id": "1RViVJm5cZ7BntUme9aLFRrsZv6mc9gJGrhymtTRKzXc"},
-    {"schema": "MorningBlues", "spreadsheet_id": "1-gvuQGo88AI6-ma71wcR4OJTu7bc5IQ60GSq3kTBzpM"},
-    {"schema": "Milock(VC)", "spreadsheet_id": "1HY5UNSClrQSc_JbesGE8VUmExIqz8p8SNGMF5JplI90"},
-    {"schema": "Milock(SC)", "spreadsheet_id": "1NjiVDH3tLBYCfZvIHWt0_6W9eKNyBQpT-IyPh1BNOrg"},
-    {"schema": "Ksgreen", "spreadsheet_id": "1yg5GOudfOGDap9udQwBcRlGMV9KWlIjMcx3xD-b94S8"},
-    {"schema": "MOAPLAY", "spreadsheet_id": "1yUwDp0VNfokttPaZ_ZH0Xr7jR5YqGHJCamCaJbOobAc"},
-    {"schema": "ShowLai", "spreadsheet_id": "填入_ID"},
-    {"schema": "ShanShui", "spreadsheet_id": "1GIifS1zFcCwjsfhKXoqMVX3FVU3XNBn1WP2vavLrpow"},
-    {"schema": "Ductech", "spreadsheet_id": "1bn4dQVq1QtyvlV6l-Wy6KmfDQP87CNc5uxgI-mev90I"},
-    {"schema": "HowCool", "spreadsheet_id": "1FJLN3Ow_xblg9WFComyTSxrBMmyhPEyRSLjcKBMhtsc"}
+# 這是你唯一的整合試算表 ID
+TARGET_SPREADSHEET_ID = "1RViVJm5cZ7BntUme9aLFRrsZv6mc9gJGrhymtTRKzXc" 
+
+# 客戶 Schema 清單 (對應 Supabase 的 Schema 名稱)
+CLIENT_SCHEMAS = [
+    "Junior", "MorningBlues", "Milock(VC)", "Milock(SC)", 
+    "Ksgreen", "MOAPLAY", "ShowLai", "ShanShui", "Ductech", "HowCool"
 ]
 
-# 每位客戶預設要同步的 View 名稱
+# 每位客戶要同步的 View 模板
 VIEW_TEMPLATES = ["_campaign_view", "_placement_view", "_search_view"]
 
 # ==========================================
 # 2. 定義各 View 的比對維度 (用於處理歸因覆蓋)
 # ==========================================
 def get_merge_keys(view_name):
+    # 使用 in 來判斷，因為現在工作表名稱會包含客戶名
     if "campaign_view" in view_name:
         return ["ad_type", "Date", "Portfolio", "Campaign", "Country", "Currency", "Targeting_Type", "Bidding_strategy"]
     elif "search_view" in view_name:
@@ -39,7 +35,7 @@ def get_merge_keys(view_name):
     return None
 
 def sync_data():
-    # --- 讀取機密資訊 (從 GitHub Secrets 讀取) ---
+    # --- 讀取機密資訊 ---
     db_host = os.getenv("DB_HOST")
     db_name = os.getenv("DB_NAME")
     db_user = os.getenv("DB_USER")
@@ -56,46 +52,39 @@ def sync_data():
     creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
     gc = gspread.authorize(creds)
 
+    # --- 開啟整合試算表 ---
+    try:
+        sh = gc.open_by_key(TARGET_SPREADSHEET_ID)
+        print(f"✅ 成功開啟整合試算表: {sh.title}")
+    except Exception as e:
+        print(f"❌ 無法開啟整合試算表: {e}")
+        return
+
     # --- 連接 Supabase ---
     try:
         conn = psycopg2.connect(
-            host=db_host, 
-            database=db_name, 
-            user=db_user, 
-            password=db_pass, 
-            port=6543,
-            connect_timeout=10
+            host=db_host, database=db_name, user=db_user, password=db_pass, 
+            port=6543, connect_timeout=10
         )
-        print(f"✅ 資料庫連線成功 (Host: {db_host})")
+        print(f"✅ 資料庫連線成功")
     except Exception as e:
         print(f"❌ 無法連接資料庫: {e}")
         return
 
     try:
-        for config in CLIENT_CONFIGS:
-            schema = config["schema"]
-            sheet_id = config["spreadsheet_id"]
+        for schema in CLIENT_SCHEMAS:
+            print(f"\n🚀 [正在處理] 客戶: {schema}")
             
-            if "填入_ID" in sheet_id or not sheet_id:
-                continue
-
-            print(f"\n🚀 [開始處理] 客戶: {schema}")
-            
-            try:
-                sh = gc.open_by_key(sheet_id)
-            except Exception as e:
-                print(f"⚠️ 無法開啟 {schema} 的試算表: {e}")
-                continue
-
-            # 根據客戶名稱動態生成 View 清單 (例如 Junior_campaign_view)
-            views_to_sync = [f"{schema}{suffix}" for suffix in VIEW_TEMPLATES]
-
-            for view_name in views_to_sync:
-                print(f"  🔄 同步中: {view_name}")
+            # 建立該客戶的所有 View
+            for suffix in VIEW_TEMPLATES:
+                db_view_name = f"{schema}{suffix}" # 資料庫裡的 View 名稱
+                sheet_tab_name = f"{schema}{suffix}" # Google Sheet 裡的分頁名稱
+                
+                print(f"  🔄 同步中: {sheet_tab_name}")
                 
                 try:
-                    # 1. 抓取資料 (加上 try 避免單一 View 失敗卡死全部)
-                    query = f'SELECT * FROM "{schema}"."{view_name}";'
+                    # 1. 抓取資料
+                    query = f'SELECT * FROM "{schema}"."{db_view_name}";'
                     df_new = pd.read_sql(query, conn)
                     
                     if df_new.empty:
@@ -105,19 +94,20 @@ def sync_data():
                     if 'Date' in df_new.columns:
                         df_new['Date'] = df_new['Date'].astype(str)
 
-                    # 2. 取得或建立工作表
+                    # 2. 取得或建立工作表分頁
                     try:
-                        worksheet = sh.worksheet(view_name)
+                        worksheet = sh.worksheet(sheet_tab_name)
                         existing_data = worksheet.get_all_records()
                         df_old = pd.DataFrame(existing_data)
                         if not df_old.empty and 'Date' in df_old.columns:
                             df_old['Date'] = df_old['Date'].astype(str)
                     except gspread.exceptions.WorksheetNotFound:
-                        worksheet = sh.add_worksheet(title=view_name, rows="1000", cols="26")
+                        # 建立新分頁
+                        worksheet = sh.add_worksheet(title=sheet_tab_name, rows="1000", cols="26")
                         df_old = pd.DataFrame()
 
                     # 3. 執行去重覆蓋
-                    merge_keys = get_merge_keys(view_name)
+                    merge_keys = get_merge_keys(db_view_name)
                     if not df_old.empty and merge_keys:
                         valid_keys = [k for k in merge_keys if k in df_new.columns and k in df_old.columns]
                         df_combined = pd.concat([df_old, df_new], ignore_index=True)
@@ -125,21 +115,22 @@ def sync_data():
                     else:
                         df_final = df_new
 
-                    # 4. 寫回
+                    # 4. 寫回 (轉換 NaN 並包含標題)
                     worksheet.clear()
                     data_to_write = [df_final.columns.values.tolist()] + df_final.fillna("").values.tolist()
                     worksheet.update('A1', data_to_write)
                     
-                    print(f"    ✅ 同步完成 (總筆數: {len(df_final)})")
-                    time.sleep(0.5) 
+                    print(f"    ✅ 完成 (筆數: {len(df_final)})")
+                    time.sleep(0.6) # 稍微增加延遲避免觸發 Google API 頻率限制
 
                 except Exception as e:
-                    print(f"    ❌ {view_name} 失敗: {e}")
+                    print(f"    ❌ 失敗: {e}")
+                    conn.rollback() # 發生錯誤時回滾，避免 Transaction 鎖死
 
     finally:
         if 'conn' in locals():
             conn.close()
-            print("\n🔌 所有任務完成，連線已關閉。")
+            print("\n🔌 所有客戶同步完畢，連線已關閉。")
 
 if __name__ == "__main__":
     sync_data()
